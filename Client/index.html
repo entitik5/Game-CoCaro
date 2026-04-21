@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CoCaro - Cờ Caro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="logo">
+      <div class="logo-mark">
+        <span class="logo-x">X</span><span class="logo-o">O</span>
+        <span class="logo-o">O</span><span class="logo-x">X</span>
+      </div>
+      <span class="logo-name">CoCaro</span>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="btnTheme" title="Chuyển giao diện sáng/tối">🌙</button>
+      <button class="btn-auth" id="btnOpenAuth">Đăng nhập</button>
+      <div class="auth-user hidden" id="authUserInfo">
+        <span class="auth-username" id="authUsername"></span>
+        <button class="btn-logout" id="btnLogout">Đăng xuất</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MENU -->
+  <div id="screen-menu" class="screen">
+    <div class="menu-wrap">
+      <div class="menu-hero">
+        <h1 class="menu-title">Cờ <em>Caro</em></h1>
+        <div class="menu-divider"></div>
+        <p class="menu-sub">Chơi nhiều người · Tùy chỉnh luật · Đấu với máy</p>
+      </div>
+      <div class="menu-body">
+        <div class="menu-actions">
+          <button class="mbtn mbtn-primary" id="btnCreateRoom">
+            <span class="micon">＋</span>
+            <span class="mlabel"><b>Tạo phòng</b><em>Tùy chỉnh bàn cờ &amp; luật chơi</em></span>
+            <em class="mbtn-arr">›</em>
+          </button>
+          <button class="mbtn mbtn-secondary" id="btnBrowseRooms">
+            <span class="micon">⊞</span>
+            <span class="mlabel"><b>Tìm phòng</b><em>Vào phòng đang chờ người</em></span>
+            <em class="mbtn-arr">›</em>
+          </button>
+          <button class="mbtn mbtn-bot" id="btnPlayBot">
+            <span class="micon">◈</span>
+            <span class="mlabel"><b>Chơi với máy</b><em>Dễ / Bình thường / Trung bình / Khó / Chuyên gia</em></span>
+            <em class="mbtn-arr">›</em>
+          </button>
+        </div>
+        <div>
+          <div class="profile-card">
+            <div class="pc-top">
+              <div id="pcLoggedIn" class="hidden">
+                <div class="pc-username" id="pcUsername"></div>
+              </div>
+              <div id="pcGuest">
+                <input type="text" id="playerName" class="pc-name" placeholder="Nhập tên của bạn..." maxlength="16"/>
+              </div>
+              <span class="pc-id" id="profileId"></span>
+            </div>
+            <div class="pc-stats">
+              <div class="pcs"><span class="pcs-n w" id="pbWin">0</span><span class="pcs-l">Thắng</span></div>
+              <div class="pcs"><span class="pcs-n d" id="pbDraw">0</span><span class="pcs-l">Hòa</span></div>
+              <div class="pcs"><span class="pcs-n l" id="pbLose">0</span><span class="pcs-l">Thua</span></div>
+              <div class="pcs pcs-full"><span class="pcs-n" id="pbWinRate">—</span><span class="pcs-l"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TẠO PHÒNG -->
+  <div id="screen-create" class="screen hidden">
+    <div class="page-head">
+      <button class="btn-back" id="btnBackMenu1">← Quay lại</button>
+      <h2>Tạo phòng mới</h2>
+    </div>
+
+    <!-- BƯỚC 1: CHỌN CHẾ ĐỘ -->
+    <div class="create-mode-wrap">
+      <p class="create-mode-label">Bạn muốn chơi kiểu nào?</p>
+      <div class="create-mode-cards">
+
+        <!-- Chơi nhanh -->
+        <div class="mode-card active" id="modeQuick" onclick="selectMode('quick')">
+          <div class="mode-icon">⚡</div>
+          <div class="mode-name">Chơi nhanh</div>
+          <div class="mode-desc">Luật mặc định, vào ngay</div>
+          <div class="mode-preview">
+            Bàn 10×10 · Thắng 5 ô<br>30s/lượt · 2 người
+          </div>
+        </div>
+
+        <!-- Tùy chỉnh -->
+        <div class="mode-card" id="modeCustom" onclick="selectMode('custom')">
+          <div class="mode-icon">⚙</div>
+          <div class="mode-name">Tùy chỉnh</div>
+          <div class="mode-desc">Chỉnh luật theo ý mình</div>
+          <div class="mode-preview dashed">
+            Kích thước · Số ô thắng<br>Thời gian · Hướng đi
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- BƯỚC 2: PANEL TÙY CHỈNH (ẩn mặc định) -->
+    <div class="create-custom-panel hidden" id="createCustomPanel">
+      <div class="two-col">
+        <div class="box">
+          <div class="box-title">Luật chơi</div>
+
+          <div class="field"><label>Kích thước bàn</label>
+            <div class="pills" id="pBoardSize">
+              <button class="pill" data-val="5">5×5</button>
+              <button class="pill" data-val="8">8×8</button>
+              <button class="pill on" data-val="10">10×10</button>
+              <button class="pill" data-val="15">15×15</button>
+              <button class="pill" data-val="20">20×20</button>
+            </div>
+            <input type="number" id="boardSizeInput" class="text-input" min="3" max="30" placeholder="Hoặc nhập số (3–30)..." style="margin-top:6px;width:100%"/>
+            <span class="input-hint" id="hintBoardSize"></span>
+            <input type="hidden" id="boardSize" value="10"/>
+          </div>
+
+          <div class="field"><label>Số ô liên tiếp để thắng</label>
+            <div class="pills" id="pWinCount">
+              <button class="pill" data-val="3">3</button>
+              <button class="pill" data-val="4">4</button>
+              <button class="pill on" data-val="5">5</button>
+              <button class="pill" data-val="6">6</button>
+              <button class="pill" data-val="7">7</button>
+            </div>
+            <input type="number" id="winCountInput" class="text-input" min="3" max="10" placeholder="Hoặc nhập số (3–10)..." style="margin-top:6px;width:100%"/>
+            <span class="input-hint" id="hintWinCount"></span>
+            <input type="hidden" id="winCountSelect" value="5"/>
+          </div>
+
+          <div class="field"><label>Hướng thắng</label>
+            <div class="checks">
+              <label class="chk"><input type="checkbox" name="dir" value="horizontal" checked/><span>→ Ngang</span></label>
+              <label class="chk"><input type="checkbox" name="dir" value="vertical" checked/><span>↓ Dọc</span></label>
+              <label class="chk"><input type="checkbox" name="dir" value="diagonal" checked/><span>↗ Chéo</span></label>
+            </div>
+          </div>
+
+          <div class="field"><label>⏱ Thời gian mỗi lượt</label>
+            <div class="pills" id="pTimePerTurn">
+              <button class="pill" data-val="5">5s</button>
+              <button class="pill" data-val="10">10s</button>
+              <button class="pill" data-val="15">15s</button>
+              <button class="pill on" data-val="30">30s</button>
+              <button class="pill" data-val="60">60s</button>
+            </div>
+            <input type="number" id="timePerTurnInput" class="text-input" min="5" max="60" placeholder="Hoặc nhập số (5–60)..." style="margin-top:6px;width:100%"/>
+            <span class="input-hint" id="hintTimePerTurn"></span>
+            <input type="hidden" id="timePerTurn" value="30"/>
+          </div>
+        </div>
+
+        <div class="box">
+          <div class="box-title">Người chơi</div>
+          <div class="field"><label>Giới hạn</label>
+            <div class="pills" id="pMaxPlayers">
+              <button class="pill on" data-val="2">2</button>
+              <button class="pill" data-val="3">3</button>
+              <button class="pill" data-val="4">4</button>
+              <button class="pill" data-val="6">6</button>
+              <button class="pill" data-val="10">10</button>
+              <button class="pill" data-val="0">∞</button>
+            </div>
+            <input type="number" id="maxPlayersInput" class="text-input" min="2" max="99" placeholder="Hoặc nhập số (2–99)..." style="margin-top:6px;width:100%"/>
+            <span class="input-hint" id="hintMaxPlayers"></span>
+            <input type="hidden" id="maxPlayers" value="2"/>
+          </div>
+          <div class="summary-preview" id="createSummary">Bàn 10×10 · Thắng 5 ô · 2 người · ⏱30s</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NÚT TẠO PHÒNG -->
+    <div class="create-footer">
+      <button class="btn-gold create-submit-btn" id="btnConfirmCreate">Tạo phòng →</button>
+    </div>
+  </div>
+
+  <!-- TÌM PHÒNG -->
+  <div id="screen-rooms" class="screen hidden">
+    <div class="page-head">
+      <button class="btn-back" id="btnBackMenu2">← Quay lại</button>
+      <h2>Tìm phòng</h2>
+      <button class="btn-icon" id="btnRefreshRooms">↺</button>
+    </div>
+    <div class="box" style="max-width:460px;margin:0 auto">
+      <div class="join-row">
+        <input type="text" id="joinRoomId" class="text-input" placeholder="Nhập mã phòng..."/>
+        <button class="btn-gold" id="btnJoinById">Vào →</button>
+      </div>
+      <div class="or-sep">— hoặc chọn phòng bên dưới —</div>
+      <div id="roomList" class="room-list"></div>
+    </div>
+  </div>
+
+  <!-- BOT -->
+  <div id="screen-bot" class="screen hidden">
+    <div class="page-head">
+      <button class="btn-back" id="btnBackMenu3">← Quay lại</button>
+      <h2>Chơi với máy</h2>
+    </div>
+    <div class="two-col">
+      <div class="box">
+        <div class="box-title">Độ khó</div>
+        <div class="diff-list">
+          <label class="diff-item"><input type="radio" name="botDiff" value="easy"/>
+            <div class="diff-body"><em class="diff-ico">🌱</em><div><b>Dễ</b><em></em></div></div></label>
+          <label class="diff-item"><input type="radio" name="botDiff" value="normal"/>
+            <div class="diff-body"><em class="diff-ico">🐣</em><div><b>Bình thường</b><em></div></div></label>
+          <label class="diff-item"><input type="radio" name="botDiff" value="medium" checked/>
+            <div class="diff-body"><em class="diff-ico">⚡</em><div><b>Trung bình</b><em></em></div></div></label>
+          <label class="diff-item"><input type="radio" name="botDiff" value="hard"/>
+            <div class="diff-body"><em class="diff-ico">🔥</em><div><b>Khó</b><em></em></div></div></label>
+          <label class="diff-item"><input type="radio" name="botDiff" value="expert"/>
+            <div class="diff-body"><em class="diff-ico">💀</em><div><b>Chuyên gia</b><em></em></div></div></label>
+        </div>
+        <div class="box-title" style="margin-top:18px">Biểu tượng của bạn</div>
+        <div class="icon-grid icon-grid-bot" id="botIconPicker"></div>
+        <div class="icon-preview">Đã chọn: <span id="botIconPreview">—</span></div>
+        <div class="box-title" style="margin-top:12px">Màu biểu tượng</div>
+        <div class="color-picker" id="botColorPicker"></div>
+      </div>
+      <div class="box">
+        <div class="box-title">Cài đặt bàn</div>
+        <div class="field"><label>Kích thước</label>
+          <div class="pills" id="pBotSize">
+            <button class="pill" data-val="5">5×5</button><button class="pill" data-val="8">8×8</button>
+            <button class="pill on" data-val="10">10×10</button><button class="pill" data-val="15">15×15</button>
+            <button class="pill" data-val="20">20×20</button>
+          </div>
+          <input type="number" id="botBoardSizeInput" class="text-input" min="3" max="30" placeholder="Hoặc nhập số..." style="margin-top:6px;width:100%"/>
+          <span class="input-hint" id="hintBotSize"></span>
+          <input type="hidden" id="botBoardSize" value="10"/>
+        </div>
+        <div class="field"><label>Số ô thắng</label>
+          <div class="pills" id="pBotWin">
+            <button class="pill" data-val="3">3</button><button class="pill" data-val="4">4</button>
+            <button class="pill on" data-val="5">5</button><button class="pill" data-val="6">6</button>
+          </div>
+          <input type="number" id="botWinCountInput" class="text-input" min="3" max="10" placeholder="Hoặc nhập số..." style="margin-top:6px;width:100%"/>
+          <span class="input-hint" id="hintBotWin"></span>
+          <input type="hidden" id="botWinCount" value="5"/>
+        </div>
+        <div class="field"><label>Hướng thắng</label>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" name="botDir" value="horizontal" checked/><span>→ Ngang</span></label>
+            <label class="chk"><input type="checkbox" name="botDir" value="vertical" checked/><span>↓ Dọc</span></label>
+            <label class="chk"><input type="checkbox" name="botDir" value="diagonal" checked/><span>↗ Chéo</span></label>
+          </div>
+        </div>
+        <div class="field"><label>⏱ Thời gian mỗi lượt</label>
+          <div class="pills" id="pBotTime">
+            <button class="pill" data-val="5">5s</button>
+            <button class="pill" data-val="10">10s</button>
+            <button class="pill" data-val="15">15s</button>
+            <button class="pill on" data-val="30">30s</button>
+            <button class="pill" data-val="60">60s</button>
+          </div>
+          <input type="number" id="botTimeInput" class="text-input" min="5" max="60" placeholder="Hoặc nhập số (5–60)..." style="margin-top:6px;width:100%"/>
+          <span class="input-hint" id="hintBotTime"></span>
+          <input type="hidden" id="botTimePerTurn" value="30"/>
+        </div>
+        <button class="btn-gold w100" id="btnStartBot">Bắt đầu →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOBBY -->
+  <div id="screen-lobby" class="screen hidden">
+    <div class="page-head">
+      <button class="btn-back" id="btnLeaveLobby">← Thoát</button>
+      <h2>Phòng chờ</h2>
+    </div>
+    <div class="lobby-layout">
+      <div class="box lobby-code-box">
+        <div class="lc-label">Mã phòng</div>
+        <div class="lc-code" id="lobbyRoomId">—</div>
+        <button class="copy-btn" id="btnCopyRoom">📋 Sao chép &amp; mời</button>
+        <div class="lc-settings" id="roomSettingsSummary"></div>
+      </div>
+      <div class="box">
+        <div class="box-title">Chọn biểu tượng</div>
+        <div class="icon-grid icon-grid-lobby" id="lobbyIconPicker"></div>
+        <div class="box-title" style="margin-top:10px">Màu biểu tượng</div>
+        <div class="color-picker" id="lobbyColorPicker"></div>
+        <div class="lobby-sep"></div>
+        <div class="box-title">Người chơi</div>
+        <div id="lobbyPlayers" class="lp-grid"></div>
+        <p class="lobby-hint" id="lobbyHint">⏳ Đang chờ...</p>
+        <button class="btn-ready" id="btnReady">✅ Sẵn sàng</button>
+        <button class="btn-start-host hidden" id="btnHostStart">🚀 Bắt đầu ván đấu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div id="screen-game" class="screen hidden">
+    <div class="game-bar">
+      <div class="gb-room" id="roomDisplay"></div>
+      <div class="gb-turn" id="turnDisplay"></div>
+      <div class="gb-timer" id="timerDisplay">—</div>
+    </div>
+    <div class="chips-row" id="playersBar"></div>
+    <div id="gameLayout"></div>
+  </div>
+
+</div><!-- .app -->
+
+<!-- RESULT POPUP -->
+<div id="resultPopup" class="popup-bg hidden">
+  <div class="popup-card">
+    <div class="popup-confetti" id="popupConfetti"></div>
+    <div class="popup-ico" id="popupEmoji"></div>
+    <h2 id="resultTitle"></h2>
+    <p id="resultReason"></p>
+    <div id="resultElo" class="hidden" style="margin:6px 0 12px;text-align:center"></div>
+    <div class="res-stats" id="resultStats"></div>
+    <div class="popup-acts">
+      <button id="popupRestart" class="btn-gold">↺ Chơi lại</button>
+      <button id="popupLeave" class="btn-ghost">Thoát</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="popup-bg hidden">
+  <div class="auth-card-modern">
+
+    <!-- ĐĂNG NHẬP -->
+    <div id="formLogin" class="auth-form-modern">
+      <div class="auth-header">
+        <h2>Đăng nhập</h2>
+        <button class="auth-close-btn" id="closeAuth">✕</button>
+      </div>
+      
+      <div class="auth-field-modern">
+        <label>Email</label>
+        <input type="email" id="loginEmail" class="input-modern" placeholder="example@gmail.com"/>
+      </div>
+      
+      <div class="auth-field-modern">
+        <label>Mật khẩu</label>
+        <div class="password-input-modern">
+          <input type="password" id="loginPassword" class="input-modern" placeholder="Nhập mật khẩu..."/>
+          <button type="button" class="eye-btn" onclick="togglePasswordVisibility('loginPassword')">👁️</button>
+        </div>
+      </div>
+      
+      <div class="auth-error hidden" id="loginError"></div>
+      
+      <button class="btn-modern btn-primary" id="btnLogin">Đăng nhập</button>
+      
+      <div class="auth-divider"></div>
+      
+      <div class="auth-footer">
+        <span class="auth-link-modern" id="toForgot">Quên mật khẩu?</span>
+        <span class="auth-link-modern" id="toRegister">Tạo tài khoản</span>
+      </div>
+    </div>
+
+    <!-- ĐĂNG KÝ -->
+    <div id="formRegister" class="auth-form-modern hidden">
+      <div class="auth-header">
+        <h2>Tạo tài khoản</h2>
+        <button class="auth-close-btn" id="closeAuthReg">✕</button>
+      </div>
+      
+      <div class="auth-field-modern">
+        <label>Tên người dùng</label>
+        <input type="text" id="regUsername" class="input-modern" placeholder="Tối thiểu 3 ký tự" maxlength="50"/>
+      </div>
+      
+      <div class="auth-field-modern">
+        <label>Email</label>
+        <input type="email" id="regEmail" class="input-modern" placeholder="example@gmail.com"/>
+      </div>
+      
+      <div class="auth-field-modern">
+        <label>Mật khẩu</label>
+        <div class="password-input-modern">
+          <input type="password" id="regPassword" class="input-modern" placeholder="Tối thiểu 6 ký tự"/>
+          <button type="button" class="eye-btn" onclick="togglePasswordVisibility('regPassword')">👁️</button>
+        </div>
+      </div>
+      
+      <div class="auth-error hidden" id="registerError"></div>
+      
+      <button class="btn-modern btn-primary" id="btnRegister">Đăng ký</button>
+      
+      <div class="auth-divider"></div>
+      
+      <div class="auth-footer">
+        <span class="auth-link-modern" id="toLogin">Đã có tài khoản? Đăng nhập</span>
+      </div>
+    </div>
+
+    <!-- XÁC NHẬN EMAIL -->
+    <div id="formVerify" class="auth-form-modern hidden">
+      <div class="auth-header">
+        <h2>Xác nhận Email</h2>
+      </div>
+      
+      <p class="auth-desc-modern">Nhập mã 6 số vừa được gửi đến email của bạn</p>
+      
+      <div class="auth-field-modern">
+        <label>Mã xác nhận</label>
+        <input type="text" id="verifyCode" class="input-modern code-input-modern" placeholder="000000" maxlength="6"/>
+      </div>
+      
+      <div class="auth-error hidden" id="verifyError"></div>
+      
+      <button class="btn-modern btn-primary" id="btnVerify">Xác nhận</button>
+      
+      <div class="auth-footer">
+        <span class="auth-link-modern" id="resendCode">Gửi lại mã</span>
+      </div>
+    </div>
+
+    <!-- QUÊN MẬT KHẨU -->
+    <div id="formForgot" class="auth-form-modern hidden">
+      <div class="auth-header">
+        <h2>Quên Mật Khẩu</h2>
+        <button class="auth-close-btn" id="closeAuthForgot">✕</button>
+      </div>
+      
+      <p class="auth-desc-modern">Nhập email của bạn để nhận mã đặt lại mật khẩu</p>
+      
+      <div class="auth-field-modern">
+        <label>Email</label>
+        <input type="email" id="forgotEmail" class="input-modern" placeholder="example@gmail.com"/>
+      </div>
+      
+      <div class="auth-error hidden" id="forgotError"></div>
+      
+      <button class="btn-modern btn-primary" id="btnForgot">Gửi Mã</button>
+      
+      <div class="auth-divider"></div>
+      
+      <div class="auth-footer">
+        <span class="auth-link-modern" id="backToLogin">← Quay lại đăng nhập</span>
+      </div>
+    </div>
+
+    <!-- ĐẶT LẠI MẬT KHẨU -->
+    <div id="formReset" class="auth-form-modern hidden">
+      <div class="auth-header">
+        <h2>Đặt Lại Mật Khẩu</h2>
+      </div>
+      
+      <p class="auth-desc-modern">Nhập mã xác nhận và mật khẩu mới</p>
+      
+      <div class="auth-field-modern">
+        <label>Mã xác nhận</label>
+        <input type="text" id="resetCode" class="input-modern code-input-modern" placeholder="000000" maxlength="6"/>
+      </div>
+      
+      <div class="auth-field-modern">
+        <label>Mật khẩu mới</label>
+        <div class="password-input-modern">
+          <input type="password" id="resetPassword" class="input-modern" placeholder="Tối thiểu 6 ký tự"/>
+          <button type="button" class="eye-btn" onclick="togglePasswordVisibility('resetPassword')">👁️</button>
+        </div>
+      </div>
+      
+      <div class="auth-error hidden" id="resetError"></div>
+      
+      <button class="btn-modern btn-primary" id="btnReset">Đặt Lại</button>
+      
+      <div class="auth-divider"></div>
+      
+      <div class="auth-footer">
+        <span class="auth-link-modern" id="resendForgotCode">Gửi lại mã</span>
+        <span class="auth-link-modern" id="backToLoginFromReset">← Quay lại đăng nhập</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="auth.js" defer></script>
+<script src="ui.js" defer></script>
+<script src="friends-client.js" defer></script>
+<script src="leaderboard-client.js" defer></script>
+</body>
+</html>

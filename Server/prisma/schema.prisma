@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  username      String    @unique @db.VarChar(50)
+  email         String    @unique @db.VarChar(100)
+  passwordHash  String?   @db.VarChar(255)
+  isVerified    Boolean   @default(false)
+  verifyToken   String?   @db.VarChar(10)
+  verifyExpires DateTime?
+  resetToken    String?   @db.VarChar(10)
+  resetExpires  DateTime?
+  createdAt     DateTime  @default(now())
+  sentRequests     Friendship[] @relation("SentFriendRequests")
+  receivedRequests Friendship[] @relation("ReceivedFriendRequests")
+  stats         UserStats?
+}
+
+model UserStats {
+  userId  Int  @id
+  wins    Int  @default(0)
+  losses  Int  @default(0)
+  draws   Int  @default(0)
+  elo     Int  @default(1000)
+
+  user    User @relation(fields: [userId], references: [id])
+}
+
+model Friendship {
+  id         Int      @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  status     String   @default("pending") // "pending" | "accepted" | "declined"
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sender   User @relation("SentFriendRequests",      fields: [senderId],   references: [id])
+  receiver User @relation("ReceivedFriendRequests",  fields: [receiverId], references: [id])
+
+  @@unique([senderId, receiverId])
+}
